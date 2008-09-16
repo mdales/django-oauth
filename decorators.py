@@ -1,4 +1,4 @@
-import oauth.oauth as oauth
+import oauth
 
 try:
     from functools import wraps, update_wrapper

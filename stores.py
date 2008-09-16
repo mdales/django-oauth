@@ -1,4 +1,4 @@
-import oauth.oauth as oauth
+import oauth
 
 from models import Nonce, Token, Consumer, Resource
 

@@ -1,4 +1,4 @@
-import oauth.oauth as oauth
+import oauth
 
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseRedirect
@@ -47,7 +47,7 @@ def user_authorization(request):
         return send_oauth_error(err)
         
     try:
-        # get the request callback, though there might not be oneÌ
+        # get the request callback, though there might not be one
         callback = oauth_server.get_callback(oauth_request)
     except oauth.OAuthError:
         callback = None

@@ -3,7 +3,7 @@ import urllib
 from django.db import models
 from django.contrib.auth.models import User
 
-import oauth.oauth as oauth
+import oauth
 
 from managers import TokenManager, ConsumerManager, ResourceManager
 from consts import KEY_SIZE, SECRET_SIZE
