@@ -56,7 +56,7 @@ def user_authorization(request):
     if request.method == 'GET':
         # try to get custom view
         authorize_view_str = getattr(settings, OAUTH_AUTHORIZE_VIEW, 
-                                    'oauth_provider.views.fake_custom_view')
+                                    'oauth.views.fake_custom_view')
         try:
             authorize_view = get_callable(authorize_view_str)
         except AttributeError:
@@ -72,7 +72,7 @@ def user_authorization(request):
         if request.session.get('oauth', '') == token.key:
             request.session['oauth'] = ''
             try:
-                if int(request.POST['authorize_access']):
+                if request.POST['authorize_access'] == 'on':
                     # authorize the token
                     token = oauth_server.authorize_token(token, request.user)
                     # return the token key
