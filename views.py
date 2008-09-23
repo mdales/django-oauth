@@ -57,7 +57,7 @@ def user_authorization(request):
     if request.method == 'GET':
         # try to get custom view
         authorize_view_str = getattr(settings, OAUTH_AUTHORIZE_VIEW, 
-                                    'oauth.views.fake_custom_view')
+                                    'django-oauth.views.fake_custom_view')
         try:
             authorize_view = get_callable(authorize_view_str)
         except AttributeError:
