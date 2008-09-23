@@ -1,9 +1,10 @@
-import oauth
+from __future__ import absolute_import
 
-from models import Nonce, Token, Consumer, Resource
+from .models import Nonce, Token, Consumer, Resource
+from .oauth import OAuthDataStore,OAuthError
+from .oauth import escape as OAuthEscape
 
-
-class DataStore(oauth.OAuthDataStore):
+class DataStore(OAuthDataStore):
     """Layer between Python OAuth and Django database."""
     def __init__(self, oauth_request):
         self.signature = oauth_request.parameters.get('oauth_signature', None)
@@ -45,7 +46,7 @@ class DataStore(oauth.OAuthDataStore):
             try:
                 resource = Resource.objects.get(name=self.scope)
             except:
-                raise oauth.OAuthError('Resource %s does not exist.' % oauth.escape(self.scope))
+                raise OAuthError('Resource %s does not exist.' % OAuthEscape(self.scope))
             self.request_token = Token.objects.create_token(consumer=self.consumer,
                                                             token_type=Token.REQUEST,
                                                             timestamp=self.timestamp,

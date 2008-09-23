@@ -1,7 +1,9 @@
+from __future__ import absolute_import
+
 from django.db import models
 from django.contrib.auth.models import User
 
-from consts import KEY_SIZE, SECRET_SIZE
+from .consts import KEY_SIZE, SECRET_SIZE
 
 class ConsumerManager(models.Manager):
     def create_consumer(self, name, user=None):

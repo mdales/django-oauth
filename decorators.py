@@ -1,4 +1,5 @@
-import oauth
+
+from __future__ import absolute_import
 
 try:
     from functools import wraps, update_wrapper
@@ -8,7 +9,8 @@ except ImportError:
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.utils.translation import ugettext as _
 
-from utils import initialize_server_request, send_oauth_error
+from .oauth import OAuthError
+from .utils import initialize_server_request, send_oauth_error
 
 def oauth_required(view_func=None, resource_name=None):
     return _CheckOAuth(view_func, resource_name)
@@ -36,15 +38,15 @@ class _CheckOAuth(object):
         if self.is_valid_request(request):
             try:
                 consumer, token, parameters = self.validate_token(request)
-            except oauth.OAuthError, e:
+            except OAuthError, e:
                 return send_oauth_error(e)
             
             if self.resource_name and token.resource.name != self.resource_name:
-                return send_oauth_error(oauth.OAuthError(_('You are not allowed to access this resource.')))
+                return send_oauth_error(OAuthError(_('You are not allowed to access this resource.')))
             elif consumer and token:
                 return self.view_func(request, *args, **kwargs)
         
-        return send_oauth_error(oauth.OAuthError(_('Invalid request parameters.')))
+        return send_oauth_error(OAuthError(_('Invalid request parameters.')))
 
     @staticmethod
     def is_valid_request(request):

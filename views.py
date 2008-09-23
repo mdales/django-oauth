@@ -1,4 +1,4 @@
-import oauth
+from __future__ import absolute_import
 
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseRedirect
@@ -6,11 +6,12 @@ from django.utils.translation import ugettext as _
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import get_callable
 
-from utils import initialize_server_request, send_oauth_error
-from decorators import oauth_required
+from .decorators import oauth_required
+from .oauth import OAuthError
+from .utils import initialize_server_request, send_oauth_error
 
 OAUTH_AUTHORIZE_VIEW = 'OAUTH_AUTHORIZE_VIEW'
-INVALID_PARAMS_RESPONSE = send_oauth_error(oauth.OAuthError(
+INVALID_PARAMS_RESPONSE = send_oauth_error(OAuthError(
                                             _('Invalid request parameters.')))
 
 def request_token(request):
@@ -27,7 +28,7 @@ def request_token(request):
         token = oauth_server.fetch_request_token(oauth_request)
         # return the token
         response = HttpResponse(token.to_string())
-    except oauth.OAuthError, err:
+    except OAuthError, err:
         response = send_oauth_error(err)
     return response
     
@@ -43,13 +44,13 @@ def user_authorization(request):
     try:
         # get the request token
         token = oauth_server.fetch_request_token(oauth_request)
-    except oauth.OAuthError, err:
+    except OAuthError, err:
         return send_oauth_error(err)
         
     try:
         # get the request callback, though there might not be one
         callback = oauth_server.get_callback(oauth_request)
-    except oauth.OAuthError:
+    except OAuthError:
         callback = None
 
     # entry point for the user
@@ -84,10 +85,10 @@ def user_authorization(request):
                 else:
                     # Not sure what to do here - i'll deal with it later
                     response = HttpResponse("Authorized")
-            except oauth.OAuthError, err:
+            except OAuthError, err:
                 response = send_oauth_error(err)
         else:
-            response = send_oauth_error(oauth.OAuthError(_('Action not allowed.')))
+            response = send_oauth_error(OAuthError(_('Action not allowed.')))
         return response
     
 def access_token(request):
@@ -103,7 +104,7 @@ def access_token(request):
         token = oauth_server.fetch_access_token(oauth_request)
         # return the token
         response = HttpResponse(token.to_string())
-    except oauth.OAuthError, err:
+    except OAuthError, err:
         response = send_oauth_error(err)
     return response
 

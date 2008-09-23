@@ -1,12 +1,12 @@
+from __future__ import absolute_import
+
 import urllib
 
 from django.db import models
 from django.contrib.auth.models import User
 
-import oauth
-
-from managers import TokenManager, ConsumerManager, ResourceManager
-from consts import KEY_SIZE, SECRET_SIZE
+from .managers import TokenManager, ConsumerManager, ResourceManager
+from .consts import KEY_SIZE, SECRET_SIZE
 
 
 class Nonce(models.Model):

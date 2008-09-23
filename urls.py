@@ -1,6 +1,8 @@
+from __future__ import absolute_import
+
 from django.conf.urls.defaults import *
 
-from views import request_token, user_authorization, access_token
+from .views import request_token, user_authorization, access_token
 
 urlpatterns = patterns('',
     url(r'^request_token/$',    request_token,      name='oauth_request_token'),
