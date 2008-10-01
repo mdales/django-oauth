@@ -52,13 +52,17 @@ class _CheckOAuth(object):
     def is_valid_request(request):
         # first check the HTTP Authorization header 
         # - this is the preferred way to pass parameters, according to the oauth spec.
-        auth_params = request.META["HTTP_AUTHORIZATION"]
-        in_auth = 'oauth_consumer_key' in auth_params \
-            and 'oauth_token' in auth_params \
-            and 'oauth_signature_method' in auth_params \
-            and 'oauth_signature' in auth_params \
-            and 'oauth_timestamp' in auth_params \
-            and 'oauth_nonce' in auth_params
+        try:
+            auth_params = request.META["HTTP_AUTHORIZATION"]
+        except KeyError:
+            in_auth = False
+        else:
+            in_auth = 'oauth_consumer_key' in auth_params \
+                and 'oauth_token' in auth_params \
+                and 'oauth_signature_method' in auth_params \
+                and 'oauth_signature' in auth_params \
+                and 'oauth_timestamp' in auth_params \
+                and 'oauth_nonce' in auth_params
           
         # also try the request, which covers POST and GET
         req_params = request.REQUEST
