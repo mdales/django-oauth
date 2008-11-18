@@ -27,7 +27,7 @@ def request_token(request):
         # create a request token
         token = oauth_server.fetch_request_token(oauth_request)
         # return the token
-        response = HttpResponse(token.to_string())
+        response = HttpResponse(token.to_string(), mimetype="text/plain")
     except OAuthError, err:
         response = send_oauth_error(err)
     return response
@@ -84,7 +84,7 @@ def user_authorization(request):
                     response = HttpResponseRedirect('%s?%s' % (callback, args))
                 else:
                     # Not sure what to do here - i'll deal with it later
-                    response = HttpResponse("Authorized")
+                    response = HttpResponse("Authorized", mimetype="text/plain")
             except OAuthError, err:
                 response = send_oauth_error(err)
         else:
@@ -103,7 +103,7 @@ def access_token(request):
         # get the request token
         token = oauth_server.fetch_access_token(oauth_request)
         # return the token
-        response = HttpResponse(token.to_string())
+        response = HttpResponse(token.to_string(), mimetype="text/plain")
     except OAuthError, err:
         response = send_oauth_error(err)
     return response
