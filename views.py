@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 
+import logging
+
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotAllowed
 from django.utils.translation import ugettext as _
@@ -13,6 +15,9 @@ from .utils import initialize_server_request, send_oauth_error
 OAUTH_AUTHORIZE_VIEW = 'OAUTH_AUTHORIZE_VIEW'
 INVALID_PARAMS_RESPONSE = send_oauth_error(OAuthError(
                                             _('Invalid request parameters.')))
+
+log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
 
 def request_token(request):
     """
@@ -112,8 +117,9 @@ def access_token(request):
 def revoke_token(request):
     if request.method == 'POST':
         if 'todelete' in request.POST:
-            key   = request.POST['todelete']
+            key = request.POST['todelete']
             request.user.token_set.filter(key=key).delete()
+            log.info("OAuth token %s for user %s has been revoked" % (key, request.user))
             return HttpResponse('The token has been revoked.')
     else:
         return HttpResponseNotAllowed(['POST'])
