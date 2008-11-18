@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotAllowed
 from django.utils.translation import ugettext as _
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import get_callable
@@ -57,7 +57,7 @@ def user_authorization(request):
     if request.method == 'GET':
         # try to get custom view
         authorize_view_str = getattr(settings, OAUTH_AUTHORIZE_VIEW, 
-                                    'django-oauth.views.fake_custom_view')
+                                    'django_oauth.views.fake_custom_view')
         try:
             authorize_view = get_callable(authorize_view_str)
         except AttributeError:
@@ -107,6 +107,16 @@ def access_token(request):
     except OAuthError, err:
         response = send_oauth_error(err)
     return response
+
+@login_required
+def revoke_token(request):
+    if request.method == 'POST':
+        if 'todelete' in request.POST:
+            key   = request.POST['todelete']
+            request.user.token_set.filter(key=key).delete()
+            return HttpResponse('The token has been revoked.')
+    else:
+        return HttpResponseNotAllowed(['POST'])
 
 @oauth_required
 def protected_resource_example(request):
