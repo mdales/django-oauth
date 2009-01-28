@@ -34,8 +34,10 @@ class Consumer(models.Model):
     key = models.CharField(max_length=KEY_SIZE)
     secret = models.CharField(max_length=SECRET_SIZE)
     
-    user = models.ForeignKey(User, null=True, blank=True)
-
+    user = models.ForeignKey(User)
+    url = models.URLField(blank=True)
+    description = models.TextField(blank=True)
+    
     objects = ConsumerManager()
         
     def __unicode__(self):
