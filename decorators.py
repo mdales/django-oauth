@@ -13,16 +13,16 @@ from .oauth import OAuthError
 from .utils import initialize_server_request, send_oauth_error
 
 def oauth_required(view_func=None, resource_name=None):
-    return _CheckOAuth(view_func, resource_name)
+    return CheckOAuth(view_func, resource_name)
 
-class _CheckOAuth(object):
+class CheckOAuth(object):
     """
     Class that checks that the OAuth parameters passes the given test, raising
     an OAuth error otherwise. If the test is passed, the view function
     is invoked.
 
     We use a class here so that we can define __get__. This way, when a
-    _CheckOAuth object is used as a method decorator, the view function
+    CheckOAuth object is used as a method decorator, the view function
     is properly bound to its instance.
     """
     def __init__(self, view_func, resource_name):
@@ -32,7 +32,7 @@ class _CheckOAuth(object):
         
     def __get__(self, obj, cls=None):
         view_func = self.view_func.__get__(obj, cls)
-        return _CheckOAuth(view_func, self.resource_name)
+        return CheckOAuth(view_func, self.resource_name)
     
     def __call__(self, request, *args, **kwargs):
         if self.is_valid_request(request):
