@@ -79,6 +79,10 @@ specify this view, for instance::
     OAUTH_AUTHORIZE_VIEW = 'myapp.views.oauth_authorize'
 
 .. note::
+    See example below with a custom callback view (optional), which depends on
+    ``OAUTH_CALLBACK_VIEW`` setting.
+
+.. note::
     This implementation set an ``oauth`` flag in session which certify that 
     the validation had been done by the current user. Otherwise, the external 
     service can directly POST the validation argument and validate the token 
@@ -267,7 +271,7 @@ redirects her back to the Consumer's callback URL::
     >>> response.status_code
     200
     >>> response.content
-    'Fake custom view for printer.example.com.'
+    'Fake authorize view for printer.example.com.'
     
     >>> # fake authorization by the user
     >>> parameters['authorize_access'] = 1
@@ -299,6 +303,23 @@ redirects her back to the Consumer's callback URL::
     'http://printer.example.com/request_token_ready?error=Access%20not%20granted%20by%20user.'
     >>> c.logout()
 
+The callback argument is optional, you can specify your own default callback
+view with ``OAUTH_CALLBACK_VIEW`` setting::
+
+    >>> parameters = {
+    ...     'oauth_token': token.key,
+    ... }
+    >>> c.login(username='jane', password='toto')
+    True
+    >>> response = c.get("/oauth/authorize/", parameters)
+    >>> parameters['authorize_access'] = 0
+    >>> response = c.post("/oauth/authorize/", parameters)
+    >>> response.status_code
+    200
+    >>> response.content
+    'Fake callback view.'
+    >>> c.logout()
+
 
 Obtaining an Access Token
 -------------------------
@@ -317,6 +338,10 @@ Service Provider to exchange it for an Access Token::
     ...     'oauth_version': '1.0',
     ... }
     >>> response = c.get("/oauth/access_token/", parameters)
+
+.. note::
+    You can use HTTP Authorization header, if you provide both, header will be
+    checked before parameters. It depends on your needs.
 
 The Service Provider checks the signature and replies with an Access Token in 
 the body of the HTTP response::
@@ -344,6 +369,18 @@ Nonce::
     401
     >>> response.content
     'Nonce already used: accessnonce'
+
+The Consumer will not be able to request an Access Token if the token is not
+approved::
+
+    >>> parameters['oauth_nonce'] = 'anotheraccessnonce'
+    >>> token.is_approved = False
+    >>> token.save()
+    >>> response = c.get("/oauth/access_token/", parameters)
+    >>> response.status_code
+    401
+    >>> response.content
+    'Consumer key or token key does not match. Make sure your request token is approved too.'
 
 
 Accessing Protected Resources
