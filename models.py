@@ -31,8 +31,8 @@ class Resource(models.Model):
 
 class Consumer(models.Model):
     name = models.CharField(max_length=255)
-    key = models.CharField(max_length=KEY_SIZE)
-    secret = models.CharField(max_length=SECRET_SIZE)
+    key = models.CharField(max_length=KEY_SIZE, null=True, blank=True)
+    secret = models.CharField(max_length=SECRET_SIZE, null=True, blank=True)
     
     user = models.ForeignKey(User)
     url = models.URLField(blank=True)
