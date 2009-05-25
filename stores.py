@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 
-from .models import Nonce, Token, Consumer, Resource
+from django.core.cache import cache
+
+from .models import Token, Consumer, Resource
 from .oauth import OAuthDataStore,OAuthError
 from .oauth import escape as OAuthEscape
 
@@ -31,15 +33,12 @@ class DataStore(OAuthDataStore):
             return None
 
     def lookup_nonce(self, oauth_consumer, oauth_token, nonce):
-        if oauth_token is None:
-            return None
-        nonce, created = Nonce.objects.get_or_create(consumer_key=oauth_consumer.key, 
-                                                     token_key=oauth_token.key,
-                                                     key=nonce)
-        if created:
-            return None
+        nonce_key = "%s-%s-%s" % (oauth_consumer.key, oauth_token.key, nonce)
+        v = cache.get(nonce_key)
+        if v:
+            return nonce_key
         else:
-            return nonce.key
+            cache.set(nonce_key, True, 300)
 
     def fetch_request_token(self, oauth_consumer):
         if oauth_consumer.key == self.consumer.key:
