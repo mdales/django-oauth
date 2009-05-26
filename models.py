@@ -9,15 +9,6 @@ from .managers import TokenManager, ConsumerManager, ResourceManager
 from .consts import KEY_SIZE, SECRET_SIZE
 
 
-class Nonce(models.Model):
-    token_key = models.CharField(max_length=KEY_SIZE)
-    consumer_key = models.CharField(max_length=KEY_SIZE)
-    key = models.CharField(max_length=255)
-    
-    def __unicode__(self):
-        return u"Nonce %s for %s" % (self.key, self.consumer_key)
-
-
 class Resource(models.Model):
     name = models.CharField(max_length=255)
     url = models.TextField(max_length=2047)
