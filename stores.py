@@ -33,7 +33,9 @@ class DataStore(OAuthDataStore):
             return None
 
     def lookup_nonce(self, oauth_consumer, oauth_token, nonce):
-        nonce_key = "%s-%s-%s" % (oauth_consumer.key, oauth_token.key, nonce)
+        # The OAuth token may be None for an initial request
+        token_key = oauth_token and oauth_token.key or ''
+        nonce_key = "%s-%s-%s" % (oauth_consumer.key, token_key, nonce)
         v = cache.get(nonce_key)
         if v:
             return nonce_key
