@@ -54,6 +54,9 @@ class Token(models.Model):
     token_type = models.IntegerField(choices=TOKEN_TYPES)
     timestamp = models.IntegerField()
     is_approved = models.BooleanField(default=False)
+
+    # Only used at the moment if this is an API token
+    name = models.CharField(max_length=50, null=True, blank=True)
     
     user = models.ForeignKey(User, null=True, blank=True)
     consumer = models.ForeignKey(Consumer)
