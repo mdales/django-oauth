@@ -43,6 +43,15 @@ class Consumer(models.Model):
         self.secret = secret
         self.save()
 
+    def generate_key_and_empty_secret(self):
+        key = User.objects.make_random_password(length=KEY_SIZE)
+        secret = ""
+        while Token.objects.filter(key__exact=key, secret__exact=secret).count():
+            key = User.objects.make_random_password(length=KEY_SIZE)
+        self.key = key
+        self.secret = secret
+        self.save()
+
 
 class Token(models.Model):
     REQUEST = 1
