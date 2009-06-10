@@ -1,0 +1,10 @@
+This is a forked version of David Larlet's django-oauth.
+
+One very important difference is that this version requires that you be running a real cache behind Django's caching framework: http://docs.djangoproject.com/en/dev/topics/cache/
+
+The cache is used for keeping track of nonces and making sure that none are duplicated within a short period of time, so a cache backend with automatic expiry is required. Memcached is known to work, other backends are untested.
+
+If you run with a dummy cache, django-oauth will operate without complaint, but you will lose all protection against replay attacks. You should only do this in testing environments.
+
+Toby White, Inkling Software
+2009-05-26

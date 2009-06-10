@@ -3,16 +3,18 @@ from __future__ import absolute_import
 from django.conf import settings
 from django.http import HttpResponse
 
+from . import oauth
 from .oauth import OAuthRequest, OAuthServer, build_authenticate_header
-from .oauth import OAuthSignatureMethod_PLAINTEXT, OAuthSignatureMethod_HMAC_SHA1
 from .stores import DataStore
 
 OAUTH_REALM_KEY_NAME = 'OAUTH_REALM_KEY_NAME'
 
-def initialize_server_request(request):
+def initialize_server_request(request, signature_methods=None):
     """Shortcut for initialization."""
     # Django converts Authorization header in HTTP_AUTHORIZATION
     # Warning: it doesn't happen in tests but it's useful, do not remove!
+    if signature_methods is None:
+        signature_methods = ["PLAINTEXT", "HMAC_SHA1"]
     auth_header = {}
     if 'Authorization' in request.META:
         auth_header = {'Authorization': request.META['Authorization']}
@@ -26,8 +28,12 @@ def initialize_server_request(request):
                                                     query_string=request.environ.get('QUERY_STRING', ''))
     if oauth_request:
         oauth_server = OAuthServer(DataStore(oauth_request))
-        oauth_server.add_signature_method(OAuthSignatureMethod_PLAINTEXT())
-        oauth_server.add_signature_method(OAuthSignatureMethod_HMAC_SHA1())
+        for signature_method in signature_methods:
+            try:
+                signature_function = getattr(oauth, "OAuthSignatureMethod_"+signature_method)
+            except AttributeError:
+                raise ValueError("No such OAuth signature method defined")
+            oauth_server.add_signature_method(signature_function())
     else:
         oauth_server = None
     return oauth_server, oauth_request

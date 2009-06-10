@@ -9,15 +9,6 @@ from .managers import TokenManager, ConsumerManager, ResourceManager
 from .consts import KEY_SIZE, SECRET_SIZE
 
 
-class Nonce(models.Model):
-    token_key = models.CharField(max_length=KEY_SIZE)
-    consumer_key = models.CharField(max_length=KEY_SIZE)
-    key = models.CharField(max_length=255)
-    
-    def __unicode__(self):
-        return u"Nonce %s for %s" % (self.key, self.consumer_key)
-
-
 class Resource(models.Model):
     name = models.CharField(max_length=255)
     url = models.TextField(max_length=2047)
@@ -52,6 +43,15 @@ class Consumer(models.Model):
         self.secret = secret
         self.save()
 
+    def generate_key_and_empty_secret(self):
+        key = User.objects.make_random_password(length=KEY_SIZE)
+        secret = ""
+        while Token.objects.filter(key__exact=key, secret__exact=secret).count():
+            key = User.objects.make_random_password(length=KEY_SIZE)
+        self.key = key
+        self.secret = secret
+        self.save()
+
 
 class Token(models.Model):
     REQUEST = 1
@@ -63,6 +63,9 @@ class Token(models.Model):
     token_type = models.IntegerField(choices=TOKEN_TYPES)
     timestamp = models.IntegerField()
     is_approved = models.BooleanField(default=False)
+
+    # Only used at the moment if this is an API token
+    name = models.CharField(max_length=50, null=True, blank=True)
     
     user = models.ForeignKey(User, null=True, blank=True)
     consumer = models.ForeignKey(Consumer)

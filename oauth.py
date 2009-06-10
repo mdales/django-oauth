@@ -1,3 +1,27 @@
+"""
+The MIT License
+
+Copyright (c) 2007 Leah Culver
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+"""
+
 import cgi
 import urllib
 import time
@@ -176,7 +200,12 @@ class OAuthRequest(object):
         """Parses the URL and rebuilds it to be scheme://host/path."""
         parts = urlparse.urlparse(self.http_url)
         # scheme, netloc, path
-        url_string = '%s://%s%s' % (parts[0], parts[1], parts[2])
+        scheme, netloc, path = parts[:3]
+        if scheme == 'http':
+            netloc = netloc.rstrip(':80')
+        elif scheme == 'https':
+            netloc = netloc.rstrip(':443')
+        url_string = '%s://%s%s' % (scheme, netloc, path)
         return url_string
 
     def sign_request(self, signature_method, consumer, token):
@@ -203,6 +232,7 @@ class OAuthRequest(object):
             auth_header = headers['Authorization']
             # Check that the authorization header is OAuth.
             if auth_header.index('OAuth') > -1:
+                auth_header = auth_header.lstrip('OAuth ')
                 try:
                     # Get the parameters from the header.
                     header_params = OAuthRequest._split_header(auth_header)
@@ -267,7 +297,7 @@ class OAuthRequest(object):
         parts = header.split(',')
         for param in parts:
             # Ignore realm parameter.
-            if param.find('OAuth realm') > -1:
+            if param.find('realm') > -1:
                 continue
             # Remove whitespace.
             param = param.strip()
@@ -387,8 +417,6 @@ class OAuthServer(object):
 
     def _get_consumer(self, oauth_request):
         consumer_key = oauth_request.get_parameter('oauth_consumer_key')
-        if not consumer_key:
-            raise OAuthError('Invalid consumer key.')
         consumer = self.data_store.lookup_consumer(consumer_key)
         if not consumer:
             raise OAuthError('Invalid consumer.')
@@ -564,3 +592,4 @@ class OAuthSignatureMethod_PLAINTEXT(OAuthSignatureMethod):
         key, raw = self.build_signature_base_string(oauth_request, consumer,
             token)
         return key
+
