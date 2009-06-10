@@ -185,12 +185,13 @@ class OAuthRequest(object):
             del params['oauth_signature']
         except:
             pass
-        key_values = params.items()
+        # Escape key values before sorting.
+        key_values = [(escape(_utf8_str(k)), escape(_utf8_str(v))) \
+            for k,v in params.items()]
         # Sort lexicographically, first after key, then after value.
         key_values.sort()
-        # Combine key value pairs in string and escape.
-        return '&'.join(['%s=%s' % (escape(_utf8_str(k)), escape(_utf8_str(v))) \
-            for k, v in key_values])
+        # Combine key value pairs into a string.
+        return '&'.join(['%s=%s' % (k, v) for k, v in key_values])
 
     def get_normalized_http_method(self):
         """Uppercases the http method."""
@@ -199,14 +200,13 @@ class OAuthRequest(object):
     def get_normalized_http_url(self):
         """Parses the URL and rebuilds it to be scheme://host/path."""
         parts = urlparse.urlparse(self.http_url)
-        # scheme, netloc, path
         scheme, netloc, path = parts[:3]
-        if scheme == 'http':
-            netloc = netloc.rstrip(':80')
-        elif scheme == 'https':
-            netloc = netloc.rstrip(':443')
-        url_string = '%s://%s%s' % (scheme, netloc, path)
-        return url_string
+        # Exclude default port numbers.
+        if scheme == 'http' and netloc[-3:] == ':80':
+            netloc = netloc[:-3]
+        elif scheme == 'https' and netloc[-4:] == ':443':
+            netloc = netloc[:-4]
+        return '%s://%s%s' % (scheme, netloc, path)
 
     def sign_request(self, signature_method, consumer, token):
         """Set the signature parameter to the result of build_signature."""
@@ -592,4 +592,3 @@ class OAuthSignatureMethod_PLAINTEXT(OAuthSignatureMethod):
         key, raw = self.build_signature_base_string(oauth_request, consumer,
             token)
         return key
-
