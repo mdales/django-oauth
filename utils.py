@@ -21,15 +21,12 @@ def initialize_server_request(request, signature_methods=None):
     elif 'HTTP_AUTHORIZATION' in request.META:
         auth_header =  {'Authorization': request.META['HTTP_AUTHORIZATION']}
 
+    params = request.GET.copy()
     # According to 9.1.1, we must not include params from multipart/form-data POST
     if (request.method == "POST" and
         request.META['CONTENT_TYPE'] == "application/x-www-form-urlencoded"):
-        # copy so that we can update
-        params = request.GET.copy()
         # a QueryDict update will preserve multiple values.
         params.update(request.POST)
-    else:
-        params = request.GET
     oauth_request = OAuthRequest.from_request(request.method,
                                               request.build_absolute_uri(),
                                               headers=auth_header,
