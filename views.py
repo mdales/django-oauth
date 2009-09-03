@@ -1,6 +1,9 @@
 from __future__ import absolute_import
 
+import cgi
 import logging
+import urllib
+import urlparse
 
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotAllowed
@@ -83,17 +86,18 @@ def user_authorization(request):
                     # authorize the token
                     token = oauth_server.authorize_token(token, request.user)
                     # return the token key
-                    args = token.to_string(only_key=True)
+                    args = {'oauth_token': token.key}
                 else:
-                    args = 'error=%s' % _('Access not granted by user.')
+                    args = {'error': _('Access not granted by user.')}
             except OAuthError, err:
                 response = send_oauth_error(err)
             if callback:
-                if "?" in callback:
-                    url_delimiter = "&"
-                else:
-                    url_delimiter = "?"
-                response = HttpResponseRedirect('%s%s%s' % (callback, url_delimiter, args))
+                # append args to the callback url query params
+                callback_url = list(urlparse.urlparse(callback))
+                callback_url[4] = urllib.urlencode(
+                    cgi.parse_qsl(callback_url[4]) + [args])
+                callback = str(urlparse.urlunparse(callback_url))
+                response = HttpResponseRedirect(callback)
             else:
                 # try to get custom callback view
                 callback_view_str = getattr(settings, OAUTH_CALLBACK_VIEW, 
