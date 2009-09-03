@@ -76,13 +76,11 @@ class Token(models.Model):
     def __unicode__(self):
         return u"%s Token %s for %s" % (self.get_token_type_display(), self.key, self.consumer)
 
-    def to_string(self, only_key=False):
+    def to_string(self):
         token_dict = {
             'oauth_token': self.key, 
             'oauth_token_secret': self.secret
         }
-        if only_key:
-            del token_dict['oauth_token_secret']
         return urllib.urlencode(token_dict)
 
     def generate_random_codes(self):
