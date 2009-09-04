@@ -17,6 +17,8 @@ from .utils import initialize_server_request, send_oauth_error
 
 OAUTH_AUTHORIZE_VIEW = 'OAUTH_AUTHORIZE_VIEW'
 OAUTH_CALLBACK_VIEW = 'OAUTH_CALLBACK_VIEW'
+OAUTH_AUTHORIZE_CALLBACK = 'OAUTH_AUTHORIZE_CALLBACK'
+
 INVALID_PARAMS_RESPONSE = send_oauth_error(OAuthError(
                                             _('Invalid request parameters.')))
 
@@ -85,6 +87,11 @@ def user_authorization(request):
                 if request.POST.get('authorize_access') == 'on':
                     # authorize the token
                     token = oauth_server.authorize_token(token, request.user)
+
+                    # let the rest of the django world react if they want
+                    if hasattr(settings, OAUTH_AUTHORIZE_CALLBACK):
+                        get_callable(settings.OAUTH_AUTHORIZE_CALLBACK)(request, token)
+
                     # return the token key
                     args = {'oauth_token': token.key}
                 else:
