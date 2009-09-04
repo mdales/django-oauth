@@ -42,14 +42,15 @@ class DataStore(OAuthDataStore):
         else:
             cache.set(nonce_key, True, 300)
 
-    def fetch_request_token(self, oauth_consumer):
+    def fetch_request_token(self, oauth_consumer, callback=None):
         if oauth_consumer.key == self.consumer.key:
             try:
                 resource = Resource.objects.get(name=self.scope)
             except:
                 raise OAuthError('Resource %s does not exist.' % OAuthEscape(self.scope))
+            token_type = Token.REQUEST_1_0a if callback else Token.REQUEST
             self.request_token = Token.objects.create_token(consumer=self.consumer,
-                                                            token_type=Token.REQUEST,
+                                                            token_type=token_type,
                                                             timestamp=self.timestamp,
                                                             resource=resource)
             return self.request_token

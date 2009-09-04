@@ -56,7 +56,10 @@ class Consumer(models.Model):
 class Token(models.Model):
     REQUEST = 1
     ACCESS = 2
-    TOKEN_TYPES = ((REQUEST, u'Request'), (ACCESS, u'Access'))
+    REQUEST_1_0a = 3
+    TOKEN_TYPES = ((REQUEST, u'Request'),
+                   (ACCESS, u'Access'),
+                   (REQUEST_1_0a, u'Request 1.0a'))
     
     key = models.CharField(max_length=KEY_SIZE)
     secret = models.CharField(max_length=SECRET_SIZE)
@@ -81,6 +84,8 @@ class Token(models.Model):
             'oauth_token': self.key, 
             'oauth_token_secret': self.secret
         }
+        if self.token_type == self.REQUEST_1_0a:
+            token_dict['oauth_callback_confirmed'] = 'true'
         return urllib.urlencode(token_dict)
 
     def generate_random_codes(self):

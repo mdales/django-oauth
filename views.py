@@ -34,9 +34,14 @@ def request_token(request):
     oauth_server, oauth_request = initialize_server_request(request)
     if oauth_server is None:
         return INVALID_PARAMS_RESPONSE
+
+    try:
+        callback_url = oauth_request.get_callback()
+    except OAuthError:
+        callback_url = None
     try:
         # create a request token
-        token = oauth_server.fetch_request_token(oauth_request)
+        token = oauth_server.fetch_request_token(oauth_request, callback_url)
         # return the token
         response = HttpResponse(token.to_string(), mimetype="text/plain")
     except OAuthError, err:
