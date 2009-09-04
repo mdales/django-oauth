@@ -106,7 +106,7 @@ def user_authorization(request):
                     callback_view = get_callable(callback_view_str)
                 except AttributeError:
                     raise Exception, "%s view doesn't exist." % callback_view_str
-                response = callback_view(request)
+                response = callback_view(request, **args)
         else:
             response = send_oauth_error(OAuthError(_('Action not allowed.')))
         return response
