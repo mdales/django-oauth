@@ -1,12 +1,21 @@
 from __future__ import absolute_import
 
-import urllib
-
 from django.db import models
 from django.contrib.auth.models import User
 
 from .managers import TokenManager, ConsumerManager, ResourceManager
-from .consts import KEY_SIZE, SECRET_SIZE
+from .consts import KEY_SIZE, SECRET_SIZE, VERIFIER_SIZE, MAX_URL_LENGTH
+
+
+class CallbackURLField(models.URLField):
+    def __init__(self, *args, **kwargs):
+        super(CallbackURLField, self).__init__(max_length=MAX_URL_LENGTH,
+                                               *args, **kwargs)
+
+    def clean(self, data):
+        if data == "oob":
+            return data
+        return super(CallbackURLField, self).clean(data)
 
 
 class Resource(models.Model):
@@ -66,6 +75,8 @@ class Token(models.Model):
     token_type = models.IntegerField(choices=TOKEN_TYPES)
     timestamp = models.IntegerField()
     is_approved = models.BooleanField(default=False)
+    verifier = models.CharField(max_length=VERIFIER_SIZE, null=True, blank=True)
+    callback = CallbackURLField(null=True, blank=True)
 
     # Only used at the moment if this is an API token
     name = models.CharField(max_length=50, null=True, blank=True)
@@ -79,14 +90,15 @@ class Token(models.Model):
     def __unicode__(self):
         return u"%s Token %s for %s" % (self.get_token_type_display(), self.key, self.consumer)
 
-    def to_string(self):
-        token_dict = {
+    @property
+    def is_1_0a_request(self):
+        return self.token_type == Token.REQUEST_1_0a
+
+    def to_dict(self):
+        return {
             'oauth_token': self.key, 
             'oauth_token_secret': self.secret
         }
-        if self.token_type == self.REQUEST_1_0a:
-            token_dict['oauth_callback_confirmed'] = 'true'
-        return urllib.urlencode(token_dict)
 
     def generate_random_codes(self):
         key = User.objects.make_random_password(length=KEY_SIZE)
@@ -95,4 +107,7 @@ class Token(models.Model):
             secret = User.objects.make_random_password(length=SECRET_SIZE)
         self.key = key
         self.secret = secret
+        if self.is_1_0a_request:
+            self.verifier = \
+                User.objects.make_random_password(length=VERIFIER_SIZE)
         self.save()

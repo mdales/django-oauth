@@ -22,12 +22,12 @@ class DataStore(OAuthDataStore):
 
     def lookup_token(self, token_type, token):
         if token_type == 'request':
-            token_type = Token.REQUEST
+            token_type = [Token.REQUEST, Token.REQUEST_1_0a]
         elif token_type == 'access':
-            token_type = Token.ACCESS
+            token_type = [Token.ACCESS]
         try:
             self.request_token = Token.objects.get(key=token, 
-                                                   token_type=token_type)
+                                                   token_type__in=token_type)
             return self.request_token
         except Token.DoesNotExist:
             return None
