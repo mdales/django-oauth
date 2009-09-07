@@ -4,7 +4,11 @@ from django.db import models
 from django.contrib.auth.models import User
 
 from .managers import TokenManager, ConsumerManager, ResourceManager
-from .consts import KEY_SIZE, SECRET_SIZE, VERIFIER_SIZE, MAX_URL_LENGTH
+
+KEY_SIZE = 16
+SECRET_SIZE = 16
+VERIFIER_SIZE = 8
+MAX_URL_LENGTH = 2083
 
 
 class CallbackURLField(models.URLField):
