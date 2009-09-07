@@ -52,14 +52,19 @@ class DataStore(OAuthDataStore):
             self.request_token = Token.objects.create_token(consumer=self.consumer,
                                                             token_type=token_type,
                                                             timestamp=self.timestamp,
-                                                            resource=resource)
+                                                            resource=resource,
+                                                            callback=callback)
             return self.request_token
         raise OAuthError('Consumer key does not match.')
 
-    def fetch_access_token(self, oauth_consumer, oauth_token):
+    def fetch_access_token(self, oauth_consumer, oauth_token, oauth_verifier):
         if oauth_consumer.key == self.consumer.key \
         and oauth_token.key == self.request_token.key \
         and self.request_token.is_approved:
+            if self.request_token.is_1_0a_request and \
+                    self.request_token.verifier != oauth_verifier:
+                self.request_token.delete()
+                raise OAuthError('Incorrect oauth_verifier supplied')
             self.access_token = Token.objects.create_token(consumer=self.consumer,
                                                            token_type=Token.ACCESS,
                                                            timestamp=self.timestamp,

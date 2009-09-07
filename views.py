@@ -12,6 +12,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import get_callable
 
 from .decorators import oauth_required
+from .models import Token
 from .oauth import OAuthError
 from .utils import initialize_server_request, send_oauth_error
 
@@ -34,16 +35,14 @@ def request_token(request):
     oauth_server, oauth_request = initialize_server_request(request)
     if oauth_server is None:
         return INVALID_PARAMS_RESPONSE
-
-    try:
-        callback_url = oauth_request.get_callback()
-    except OAuthError:
-        callback_url = None
     try:
         # create a request token
-        token = oauth_server.fetch_request_token(oauth_request, callback_url)
+        token = oauth_server.fetch_request_token(oauth_request)
         # return the token
-        response = HttpResponse(token.to_string(), mimetype="text/plain")
+        d = token.to_dict()
+        if token.is_1_0a_request:
+            d['oauth_callback_confirmed'] = 'true'
+        response = HttpResponse(urllib.urlencode(d), mimetype="text/plain")
     except OAuthError, err:
         response = send_oauth_error(err)
     return response
@@ -58,16 +57,21 @@ def user_authorization(request):
     if oauth_request is None:
         return INVALID_PARAMS_RESPONSE
     try:
-        # get the request token
+        # get the request toke/verify
         token = oauth_server.fetch_request_token(oauth_request)
     except OAuthError, err:
         return send_oauth_error(err)
-        
+
     try:
-        # get the request callback, though there might not be one
         callback = oauth_server.get_callback(oauth_request)
+        if token.is_1_0a_request():
+            raise OAuthError("Cannot specify oauth_callback at authorization step for 1.0a protocol")
     except OAuthError:
         callback = None
+    if token.is_1_0a_request:
+        callback = token.callback
+        if callback == "oob":
+            callback = None
 
     # entry point for the user
     if request.method == 'GET':
@@ -131,9 +135,15 @@ def access_token(request):
         return INVALID_PARAMS_RESPONSE
     try:
         # get the request token
+        token = oauth_server.fetch_request_token(oauth_request)
+    except OAuthError, err:
+        return send_oauth_error(err)
+    try:
+        # get the access token
         token = oauth_server.fetch_access_token(oauth_request)
         # return the token
-        response = HttpResponse(token.to_string(), mimetype="text/plain")
+        d = token.to_dict()
+        response = HttpResponse(urllib.urlencode(d), mimetype="text/plain")
     except OAuthError, err:
         response = send_oauth_error(err)
     return response
