@@ -99,16 +99,14 @@ def user_authorization(request):
 
                     # return the token key
                     args = {'oauth_token': token.key}
+                    if token.verifier:
+                        args['oauth_verifier'] = token.verifier
                 else:
                     args = {'error': _('Access not granted by user.')}
             except OAuthError, err:
                 response = send_oauth_error(err)
             if callback:
-                # append args to the callback url query params
-                callback_url = list(urlparse.urlparse(callback))
-                callback_url[4] = urllib.urlencode(
-                    cgi.parse_qsl(callback_url[4]) + [args])
-                callback = str(urlparse.urlunparse(callback_url))
+                callback = add_query_params_to_url(callback, args)
                 response = HttpResponseRedirect(callback)
             else:
                 # try to get custom callback view
