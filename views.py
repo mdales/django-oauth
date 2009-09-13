@@ -14,7 +14,8 @@ from django.core.urlresolvers import get_callable
 from .decorators import oauth_required
 from .models import Token
 from .oauth import OAuthError
-from .utils import initialize_server_request, send_oauth_error
+from .utils import (initialize_server_request, send_oauth_error,
+                    add_query_params_to_url)
 
 OAUTH_AUTHORIZE_VIEW = 'OAUTH_AUTHORIZE_VIEW'
 OAUTH_CALLBACK_VIEW = 'OAUTH_CALLBACK_VIEW'
