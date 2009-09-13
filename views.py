@@ -64,7 +64,7 @@ def user_authorization(request):
 
     try:
         callback = oauth_server.get_callback(oauth_request)
-        if token.is_1_0a_request():
+        if token.is_1_0a_request:
             raise OAuthError("Cannot specify oauth_callback at authorization step for 1.0a protocol")
     except OAuthError:
         callback = None
