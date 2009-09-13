@@ -316,9 +316,11 @@ class OAuthRequest(object):
 
         if token:
             parameters['oauth_token'] = token.key
-            parameters['oauth_callback'] = token.callback
+            if token.callback:
+                parameters['oauth_callback'] = token.callback
             # 1.0a support for verifier.
-            parameters['oauth_verifier'] = verifier
+            if verifier:
+                parameters['oauth_verifier'] = verifier
         elif callback:
             # 1.0a support for callback in the request token request.
             parameters['oauth_callback'] = callback
