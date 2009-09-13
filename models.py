@@ -11,20 +11,9 @@ VERIFIER_SIZE = 8
 MAX_URL_LENGTH = 2083
 
 
-class CallbackURLField(models.URLField):
-    def __init__(self, *args, **kwargs):
-        super(CallbackURLField, self).__init__(max_length=MAX_URL_LENGTH,
-                                               *args, **kwargs)
-
-    def clean(self, data):
-        if data == "oob":
-            return data
-        return super(CallbackURLField, self).clean(data)
-
-
 class Resource(models.Model):
     name = models.CharField(max_length=255)
-    url = models.TextField(max_length=2047)
+    url = models.TextField(max_length=MAX_URL_LENGTH)
     is_readonly = models.BooleanField(default=True)
     
     objects = ResourceManager()
@@ -80,7 +69,7 @@ class Token(models.Model):
     timestamp = models.IntegerField()
     is_approved = models.BooleanField(default=False)
     verifier = models.CharField(max_length=VERIFIER_SIZE, null=True, blank=True)
-    callback = CallbackURLField(null=True, blank=True)
+    callback = models.CharField(max_length=MAX_URL_LENGTH, null=True, blank=True)
 
     # Only used at the moment if this is an API token
     name = models.CharField(max_length=50, null=True, blank=True)
