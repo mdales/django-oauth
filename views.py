@@ -6,7 +6,8 @@ import urllib
 import urlparse
 
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotAllowed
+from django.http import (HttpResponse, HttpResponseRedirect, 
+                         HttpResponseNotAllowed, HttpResponseBadRequest)
 from django.utils.translation import ugettext as _
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import get_callable
@@ -16,6 +17,7 @@ from .models import Token
 from .oauth import OAuthError
 from .utils import (initialize_server_request, send_oauth_error,
                     add_query_params_to_url)
+from .stores import check_valid_callback
 
 OAUTH_AUTHORIZE_VIEW = 'OAUTH_AUTHORIZE_VIEW'
 OAUTH_CALLBACK_VIEW = 'OAUTH_CALLBACK_VIEW'
@@ -66,7 +68,9 @@ def user_authorization(request):
     try:
         callback = oauth_server.get_callback(oauth_request)
         if token.is_1_0a_request:
-            raise OAuthError("Cannot specify oauth_callback at authorization step for 1.0a protocol")
+            return HttpResponseBadRequest("Cannot specify oauth_callback at authorization step for 1.0a protocol")
+        if not check_valid_callback(callback):
+            return HttpResponseBadRequest("Invalid callback URL")
     except OAuthError:
         callback = None
     if token.is_1_0a_request:
