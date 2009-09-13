@@ -66,5 +66,5 @@ def add_query_params_to_url(url, params):
     if hasattr(params, 'items'):
         params = params.items()
     url_list = list(urlparse.urlparse(url))
-    url_list[4] = urllib.urlencode(cgi.parse_qsl(url_list[4]) + [params])
+    url_list[4] = urllib.urlencode(cgi.parse_qsl(url_list[4]) + params)
     return str(urlparse.urlunparse(url_list))
