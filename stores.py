@@ -1,8 +1,10 @@
 from __future__ import absolute_import
 
+import urlparse
+
 from django.core.cache import cache
 
-from .models import Token, Consumer, Resource
+from .models import Token, Consumer, Resource, MAX_URL_LENGTH
 from .oauth import OAuthDataStore,OAuthError
 from .oauth import escape as OAuthEscape
 
@@ -86,7 +88,7 @@ class DataStore(OAuthDataStore):
         raise OAuthError('Token key does not match.')
 
 def check_valid_callback(callback):
-    if len(callback_url) > MAX_URL_LENGTH:
+    if len(callback) > MAX_URL_LENGTH:
         return False
     callback_url = urlparse.urlparse(callback)
     return (callback_url.scheme in ['http', 'https']
