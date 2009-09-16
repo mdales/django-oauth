@@ -36,7 +36,7 @@ def initialize_server_request(request, signature_methods=None):
                                               request.build_absolute_uri(),
                                               headers=auth_header,
                                               parameters=params,
-                                              query_string=request.environ.get('QUERY_STRING', ''))
+                                              query_string=request.META.get('QUERY_STRING', ''))
     if oauth_request:
         oauth_server = OAuthServer(DataStore(oauth_request))
         for signature_method in signature_methods:
