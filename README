@@ -6,7 +6,11 @@ The cache is used for keeping track of nonces and making sure that none are dupl
 
 If you run with a dummy cache, django-oauth will operate without complaint, but you will lose all protection against replay attacks. You should only do this in testing environments.
 
-This also changes the signature of the OAUTH_CALLBACK_VIEW callable
+Also there are a couple of backward-incompatible changes from the upstream version.
+
+* This version has a different db schema - additional fields on the Token model.
+
+* This version changes the signature of the OAUTH_CALLBACK_VIEW callable
 
 Toby White, Inkling Software
-2009-05-26
+2009-09-16
