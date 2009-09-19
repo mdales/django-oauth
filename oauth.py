@@ -512,6 +512,8 @@ class OAuthServer(object):
 
     def _check_timestamp(self, timestamp):
         """Verify that timestamp is recentish."""
+        if self.timestamp_threshold is None:
+            return
         timestamp = int(timestamp)
         now = int(time.time())
         lapsed = now - timestamp

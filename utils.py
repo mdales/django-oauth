@@ -39,6 +39,7 @@ def initialize_server_request(request, signature_methods=None):
                                               query_string=request.META.get('QUERY_STRING', ''))
     if oauth_request:
         oauth_server = OAuthServer(DataStore(oauth_request))
+        oauth_server.timestamp_threshold = None
         for signature_method in signature_methods:
             try:
                 signature_function = getattr(oauth, "OAuthSignatureMethod_"+signature_method)
