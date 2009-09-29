@@ -91,8 +91,12 @@ def check_valid_callback(callback):
     if len(callback) > MAX_URL_LENGTH:
         return False
     callback_url = urlparse.urlparse(callback)
-    return (callback_url.scheme in ['http', 'https']
-        and callback_url.hostname
+    # we must have a scheme, but we don't restrict it.
+    # The iPhone, for example, can dispatch to different apps
+    # based on callback URL scheme.
+    return (callback_url.scheme and callback_url.hostname
+    # We might want to forbid localhost urls, but that would make
+    # testing clients much harder.
 #        and callback_url.hostname not in ['localhost', '127.0.0.1']
         )
 
