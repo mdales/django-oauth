@@ -27,11 +27,12 @@ def initialize_server_request(request, signature_methods=None):
 
     params = request.GET.copy()
     # According to 9.1.1, we must not include params from multipart/form-data POST
-    # If there's no Content-Type header, assume that it's url encoded.
-    if (request.method == "POST" and
-        request.META.get('CONTENT_TYPE') in ["application/x-www-form-urlencoded", None]):
-        # a QueryDict update will preserve multiple values.
-        params.update(request.POST)
+    # If there's no Content-Type header, assume that it's url encoded.   
+    if (request.method == "POST"):
+        content_type = request.META.get('CONTENT_TYPE')
+        if (content_type == None) or (content_type.startswith("application/x-www-form-urlencoded")):
+            # a QueryDict update will preserve multiple values.
+            params.update(request.POST)
     oauth_request = OAuthRequest.from_request(request.method,
                                               request.build_absolute_uri(),
                                               headers=auth_header,
