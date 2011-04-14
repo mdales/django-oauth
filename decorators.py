@@ -44,7 +44,7 @@ class CheckOAuth(object):
             if self.resource_name and token.resource.name != self.resource_name:
                 return send_oauth_error(OAuthError(_('You are not allowed to access this resource.')))
             elif consumer and token:
-                request.user = user
+                request.user = token.user
                 request.oauth_token = token
                 return self.view_func(request, *args, **kwargs)
         
