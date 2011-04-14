@@ -5,8 +5,8 @@ from django.contrib.auth.models import User
 
 from .managers import TokenManager, ConsumerManager, ResourceManager
 
-KEY_SIZE = 16
-SECRET_SIZE = 16
+KEY_SIZE = 255 #16
+SECRET_SIZE = 255 #16
 VERIFIER_SIZE = 8
 MAX_URL_LENGTH = 2083
 
