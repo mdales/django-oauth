@@ -30,7 +30,8 @@ def initialize_server_request(request, signature_methods=None):
     # If there's no Content-Type header, assume that it's url encoded.   
     if (request.method == "POST"):
         content_type = request.META.get('CONTENT_TYPE')
-        if (content_type == None) or (content_type.startswith("application/x-www-form-urlencoded")):
+        if (content_type == None) or (content_type.startswith("application/x-www-form-urlencoded")) or \
+                (content_type.startswith("multipart/form-data")):
             # a QueryDict update will preserve multiple values.
             params.update(request.POST)
     oauth_request = OAuthRequest.from_request(request.method,
